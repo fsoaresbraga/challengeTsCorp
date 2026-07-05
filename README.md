@@ -83,6 +83,8 @@ docker/
 | 01 — Bootstrap (Docker + Laravel) | Concluída |
 | 02 — Banco de dados | Concluída |
 | 03 — Domínio (Models, Factories, Seeders) | Concluída |
+| 04 — Infraestrutura HTTP (routes/api.php) | Concluída |
+| 05 — Form Requests | Concluída |
 
 ## Desvios do desafio original
 
