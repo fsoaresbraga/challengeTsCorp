@@ -81,7 +81,7 @@ docker/
 | Sprint | Status |
 |---|---|
 | 01 — Bootstrap (Docker + Laravel) | Concluída |
-| 02 — Banco de dados | Pendente |
+| 02 — Banco de dados | Concluída |
 
 ## Desvios do desafio original
 
@@ -96,3 +96,20 @@ O PDF do desafio utiliza rotas e campos em português. Esta implementação util
 ## Licença
 
 Projeto de desafio técnico.
+
+## Banco de dados (Sprint 02)
+
+Tabelas de domínio:
+
+| Tabela | Descrição |
+|---|---|
+| `clients` | Clientes (email e document únicos) |
+| `proposals` | Propostas (soft delete, optimistic lock via `version`) |
+| `proposal_audits` | Trilha de auditoria append-only |
+| `idempotency_keys` | Chaves de idempotência (create/submit) |
+
+```bash
+docker compose exec app php artisan migrate
+```
+
+Documentação da estratégia de idempotência: [docs/adr-idempotency-table.md](docs/adr-idempotency-table.md)
