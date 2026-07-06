@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 /** @mixin \App\Models\Client */
-final class ClientResource extends JsonResource
+final class ClientResource extends ApiResource
 {
     public function toArray(Request $request): array
     {
@@ -17,8 +16,8 @@ final class ClientResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'document' => $this->document,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'created_at' => $this->formatDate($this->created_at),
+            'updated_at' => $this->formatDate($this->updated_at),
         ];
     }
 }
