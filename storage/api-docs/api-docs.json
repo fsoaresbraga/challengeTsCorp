@@ -304,6 +304,125 @@
                         }
                     }
                 }
+            },
+            "patch": {
+                "tags": [
+                    "Proposals"
+                ],
+                "description": "Update proposal fields in DRAFT status with optimistic lock (RF-04).",
+                "operationId": "updateProposal",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "X-Actor",
+                        "in": "header",
+                        "description": "Actor identifier: `system` or `user:{id}` (defaults to system)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "user:42"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "version"
+                                ],
+                                "properties": {
+                                    "version": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "minimum": 1
+                                    },
+                                    "product": {
+                                        "type": "string",
+                                        "example": "Cloud Hosting Premium"
+                                    },
+                                    "monthly_value": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 399.9,
+                                        "minimum": 0.01
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Proposal updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/ProposalResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Proposal not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Proposal not found."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Optimistic lock conflict",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ConflictError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation or business rule error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/BusinessError"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     },
@@ -352,6 +471,15 @@
                     "updated_at": {
                         "type": "string",
                         "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "ConflictError": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Version conflict."
                     }
                 },
                 "type": "object"

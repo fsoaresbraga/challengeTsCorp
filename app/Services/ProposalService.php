@@ -9,6 +9,7 @@ use App\Enums\ProposalOrigin;
 use App\Enums\ProposalStatus;
 use App\Exceptions\BusinessException;
 use App\Exceptions\EntityNotFoundException;
+use App\Exceptions\OptimisticLockException;
 use App\Models\Proposal;
 use Illuminate\Support\Facades\DB;
 
@@ -17,6 +18,7 @@ final class ProposalService
     public function __construct(
         private readonly ProposalAuditService $auditService,
         private readonly IdempotencyService $idempotencyService,
+        private readonly ProposalStatusService $statusService,
     ) {}
 
     /**
@@ -85,6 +87,73 @@ final class ProposalService
         }
 
         return $proposal;
+    }
+
+    /**
+     * @param array{product?: string, monthly_value?: string|float} $data
+     */
+    public function update(int $id, int $version, array $data, ?string $actorHeader): Proposal
+    {
+        $proposal = $this->findById($id);
+
+        if ($proposal->status !== ProposalStatus::Draft) {
+            throw new BusinessException('Proposal cannot be updated in current status.');
+        }
+
+        $this->statusService->assertVersion($proposal, $version);
+
+        $actor = $this->auditService->resolveActor($actorHeader);
+        $auditPayload = [];
+
+        if (array_key_exists('product', $data) && $data['product'] !== $proposal->product) {
+            $auditPayload['product'] = [
+                'from' => $proposal->product,
+                'to' => $data['product'],
+            ];
+            $proposal->product = $data['product'];
+        }
+
+        if (array_key_exists('monthly_value', $data)) {
+            $newValue = number_format((float) $data['monthly_value'], 2, '.', '');
+            $currentValue = number_format((float) $proposal->monthly_value, 2, '.', '');
+
+            if ($newValue !== $currentValue) {
+                $auditPayload['monthly_value'] = [
+                    'from' => $currentValue,
+                    'to' => $newValue,
+                ];
+                $proposal->monthly_value = $newValue;
+            }
+        }
+
+        return DB::transaction(function () use ($proposal, $version, $actor, $auditPayload): Proposal {
+            $affected = Proposal::query()
+                ->whereKey($proposal->id)
+                ->where('version', $version)
+                ->update([
+                    'product' => $proposal->product,
+                    'monthly_value' => $proposal->monthly_value,
+                    'version' => $version + 1,
+                    'updated_at' => now(),
+                ]);
+
+            if ($affected === 0) {
+                throw new OptimisticLockException();
+            }
+
+            $proposal->refresh();
+
+            if ($auditPayload !== []) {
+                $this->auditService->record(
+                    $proposal,
+                    $actor,
+                    ProposalAuditEvent::UpdatedFields,
+                    $auditPayload,
+                );
+            }
+
+            return $proposal;
+        });
     }
 
     /**

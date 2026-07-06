@@ -52,7 +52,18 @@ final class ProposalController extends BaseController
 
     public function update(UpdateProposalRequest $request, int $id): JsonResponse
     {
-        abort(501, 'Not implemented');
+        $validated = $request->validated();
+        $version = (int) $validated['version'];
+        unset($validated['version'], $validated['id']);
+
+        $proposal = $this->proposalService->update(
+            $id,
+            $version,
+            $validated,
+            $request->header('X-Actor'),
+        );
+
+        return (new ProposalResource($proposal))->response();
     }
 
     public function destroy(DestroyProposalRequest $request, int $id): JsonResponse

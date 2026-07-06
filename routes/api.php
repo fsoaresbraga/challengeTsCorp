@@ -12,4 +12,5 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
 
     Route::post('proposals', [ProposalController::class, 'store'])->name('proposals.store');
     Route::get('proposals/{id}', [ProposalController::class, 'show'])->whereNumber('id')->name('proposals.show');
+    Route::patch('proposals/{id}', [ProposalController::class, 'update'])->whereNumber('id')->name('proposals.update');
 });
