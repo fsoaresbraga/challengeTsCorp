@@ -58,32 +58,7 @@
                                 "schema": {
                                     "properties": {
                                         "data": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "integer",
-                                                    "example": 1
-                                                },
-                                                "name": {
-                                                    "type": "string",
-                                                    "example": "Acme Corp"
-                                                },
-                                                "email": {
-                                                    "type": "string",
-                                                    "format": "email"
-                                                },
-                                                "document": {
-                                                    "type": "string"
-                                                },
-                                                "created_at": {
-                                                    "type": "string",
-                                                    "format": "date-time"
-                                                },
-                                                "updated_at": {
-                                                    "type": "string",
-                                                    "format": "date-time"
-                                                }
-                                            },
-                                            "type": "object"
+                                            "$ref": "#/components/schemas/ClientResource"
                                         }
                                     },
                                     "type": "object"
@@ -96,21 +71,133 @@
                         "content": {
                             "application/json": {
                                 "schema": {
+                                    "$ref": "#/components/schemas/ValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/clients/{id}": {
+            "get": {
+                "tags": [
+                    "Clients"
+                ],
+                "description": "Retrieve a client by ID (RF-02).",
+                "operationId": "getClient",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Client found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
                                     "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Validation failed"
-                                        },
-                                        "errors": {
-                                            "type": "object"
+                                        "data": {
+                                            "$ref": "#/components/schemas/ClientResource"
                                         }
                                     },
                                     "type": "object"
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "description": "Client not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NotFoundError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationError"
+                                }
+                            }
+                        }
                     }
                 }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ClientResource": {
+                "required": [
+                    "id",
+                    "name",
+                    "email",
+                    "document",
+                    "created_at",
+                    "updated_at"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Acme Corp"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "contact@acme.example"
+                    },
+                    "document": {
+                        "type": "string",
+                        "example": "12ABC34501DE35"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "NotFoundError": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Client not found."
+                    }
+                },
+                "type": "object"
+            },
+            "ValidationError": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Validation failed"
+                    },
+                    "errors": {
+                        "type": "object"
+                    }
+                },
+                "type": "object"
             }
         }
     },
