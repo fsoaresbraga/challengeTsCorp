@@ -238,7 +238,7 @@ Transição inválida retorna **HTTP 422**.
 
 ---
 
-## Mapeamento PT → EN (RF-13)
+## Mapeamento PT → EN
 
 ### Justificativa
 
