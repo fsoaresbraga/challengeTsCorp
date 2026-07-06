@@ -24,4 +24,12 @@ final class DestroyProposalRequest extends ApiFormRequest
             'version' => ['required', 'integer', 'min:1'],
         ];
     }
+
+    /** @return array<string, string> */
+    public function messages(): array
+    {
+        return [
+            'version.required' => 'The version field is required for optimistic lock.',
+        ];
+    }
 }

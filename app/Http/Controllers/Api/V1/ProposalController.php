@@ -68,27 +68,47 @@ final class ProposalController extends BaseController
 
     public function destroy(DestroyProposalRequest $request, int $id): JsonResponse
     {
-        abort(501, 'Not implemented');
+        $validated = $request->validated();
+        $this->proposalService->destroy($id, (int) $validated['version'], $request->header('X-Actor'));
+
+        return response()->json(null, 204);
     }
 
     public function submit(ProposalStatusActionRequest $request, int $id): JsonResponse
     {
-        abort(501, 'Not implemented');
+        $validated = $request->validated();
+        $proposal = $this->proposalService->submit(
+            $id,
+            (int) $validated['version'],
+            (string) $validated['idempotency_key'],
+            $request->header('X-Actor'),
+        );
+
+        return (new ProposalResource($proposal))->response();
     }
 
     public function approve(ProposalStatusActionRequest $request, int $id): JsonResponse
     {
-        abort(501, 'Not implemented');
+        $validated = $request->validated();
+        $proposal = $this->proposalService->approve($id, (int) $validated['version'], $request->header('X-Actor'));
+
+        return (new ProposalResource($proposal))->response();
     }
 
     public function reject(ProposalStatusActionRequest $request, int $id): JsonResponse
     {
-        abort(501, 'Not implemented');
+        $validated = $request->validated();
+        $proposal = $this->proposalService->reject($id, (int) $validated['version'], $request->header('X-Actor'));
+
+        return (new ProposalResource($proposal))->response();
     }
 
     public function cancel(ProposalStatusActionRequest $request, int $id): JsonResponse
     {
-        abort(501, 'Not implemented');
+        $validated = $request->validated();
+        $proposal = $this->proposalService->cancel($id, (int) $validated['version'], $request->header('X-Actor'));
+
+        return (new ProposalResource($proposal))->response();
     }
 
     public function audit(ListProposalAuditsRequest $request, int $id): JsonResponse
