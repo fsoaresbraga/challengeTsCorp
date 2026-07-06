@@ -45,7 +45,9 @@ final class ProposalController extends BaseController
 
     public function show(ShowProposalRequest $request, int $id): JsonResponse
     {
-        abort(501, 'Not implemented');
+        $proposal = $this->proposalService->findById($id);
+
+        return (new ProposalResource($proposal))->response();
     }
 
     public function update(UpdateProposalRequest $request, int $id): JsonResponse

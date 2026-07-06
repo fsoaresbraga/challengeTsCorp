@@ -11,4 +11,5 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
     Route::get('clients/{id}', [ClientController::class, 'show'])->whereNumber('id')->name('clients.show');
 
     Route::post('proposals', [ProposalController::class, 'store'])->name('proposals.store');
+    Route::get('proposals/{id}', [ProposalController::class, 'show'])->whereNumber('id')->name('proposals.show');
 });

@@ -76,6 +76,17 @@ final class ProposalService
         });
     }
 
+    public function findById(int $id): Proposal
+    {
+        $proposal = Proposal::query()->find($id);
+
+        if ($proposal === null) {
+            throw new EntityNotFoundException('Proposal');
+        }
+
+        return $proposal;
+    }
+
     /**
      * @param array{client_id: int, product: string, monthly_value: string|float, origin: ProposalOrigin|string} $data
      *
