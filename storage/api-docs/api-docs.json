@@ -136,10 +136,124 @@
                     }
                 }
             }
+        },
+        "/api/v1/proposals": {
+            "post": {
+                "tags": [
+                    "Proposals"
+                ],
+                "description": "Create a new proposal in DRAFT status (RF-03). Requires Idempotency-Key header.",
+                "operationId": "createProposal",
+                "parameters": [
+                    {
+                        "name": "Idempotency-Key",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "create-proposal-abc-123"
+                        }
+                    },
+                    {
+                        "name": "X-Actor",
+                        "in": "header",
+                        "description": "Actor identifier: `system` or `user:{id}` (defaults to system)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "user:42"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "client_id",
+                                    "product",
+                                    "monthly_value",
+                                    "origin"
+                                ],
+                                "properties": {
+                                    "client_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "product": {
+                                        "type": "string",
+                                        "example": "Cloud Hosting Plan"
+                                    },
+                                    "monthly_value": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 299.9,
+                                        "minimum": 0.01
+                                    },
+                                    "origin": {
+                                        "type": "string",
+                                        "example": "API",
+                                        "enum": [
+                                            "APP",
+                                            "SITE",
+                                            "API"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Proposal created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/ProposalResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation or business rule error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/BusinessError"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
         "schemas": {
+            "BusinessError": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Idempotency key reused with a different request payload."
+                    }
+                },
+                "type": "object"
+            },
             "ClientResource": {
                 "required": [
                     "id",
@@ -187,6 +301,70 @@
                 },
                 "type": "object"
             },
+            "ProposalResource": {
+                "required": [
+                    "id",
+                    "client_id",
+                    "product",
+                    "monthly_value",
+                    "status",
+                    "origin",
+                    "version",
+                    "created_at",
+                    "updated_at"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "client_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "product": {
+                        "type": "string",
+                        "example": "Cloud Hosting Plan"
+                    },
+                    "monthly_value": {
+                        "type": "string",
+                        "example": "299.90"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "DRAFT",
+                        "enum": [
+                            "DRAFT",
+                            "SUBMITTED",
+                            "APPROVED",
+                            "REJECTED",
+                            "CANCELED"
+                        ]
+                    },
+                    "origin": {
+                        "type": "string",
+                        "example": "API",
+                        "enum": [
+                            "APP",
+                            "SITE",
+                            "API"
+                        ]
+                    },
+                    "version": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
             "ValidationError": {
                 "properties": {
                     "message": {
@@ -205,6 +383,10 @@
         {
             "name": "Clients",
             "description": "Client management"
+        },
+        {
+            "name": "Proposals",
+            "description": "Proposal management"
         }
     ]
 }

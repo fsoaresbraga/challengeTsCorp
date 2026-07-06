@@ -1,5 +1,6 @@
 <?php
 
+use App\Exceptions\BusinessException;
 use App\Exceptions\EntityNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -20,6 +21,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (EntityNotFoundException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json(['message' => $e->getMessage()], 404);
+            }
+        });
+
+        $exceptions->render(function (BusinessException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json(['message' => $e->getMessage()], 422);
             }
         });
     })->create();

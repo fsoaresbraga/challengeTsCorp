@@ -11,10 +11,16 @@ use App\Http\Requests\Proposal\ProposalStatusActionRequest;
 use App\Http\Requests\Proposal\ShowProposalRequest;
 use App\Http\Requests\Proposal\StoreProposalRequest;
 use App\Http\Requests\Proposal\UpdateProposalRequest;
+use App\Http\Resources\ProposalResource;
+use App\Services\ProposalService;
 use Illuminate\Http\JsonResponse;
 
 final class ProposalController extends BaseController
 {
+    public function __construct(
+        private readonly ProposalService $proposalService,
+    ) {}
+
     public function index(ListProposalsRequest $request): JsonResponse
     {
         abort(501, 'Not implemented');
@@ -22,7 +28,19 @@ final class ProposalController extends BaseController
 
     public function store(StoreProposalRequest $request): JsonResponse
     {
-        abort(501, 'Not implemented');
+        $validated = $request->validated();
+        $idempotencyKey = (string) $validated['idempotency_key'];
+        unset($validated['idempotency_key']);
+
+        $proposal = $this->proposalService->create(
+            $validated,
+            $idempotencyKey,
+            $request->header('X-Actor'),
+        );
+
+        return (new ProposalResource($proposal))
+            ->response()
+            ->setStatusCode(201);
     }
 
     public function show(ShowProposalRequest $request, int $id): JsonResponse
