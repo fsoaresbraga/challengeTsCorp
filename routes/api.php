@@ -13,6 +13,7 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
     Route::post('proposals', [ProposalController::class, 'store'])->name('proposals.store');
     Route::get('proposals', [ProposalController::class, 'index'])->name('proposals.index');
     Route::get('proposals/{id}', [ProposalController::class, 'show'])->whereNumber('id')->name('proposals.show');
+    Route::get('proposals/{id}/audit', [ProposalController::class, 'audit'])->whereNumber('id')->name('proposals.audit');
     Route::patch('proposals/{id}', [ProposalController::class, 'update'])->whereNumber('id')->name('proposals.update');
     Route::delete('proposals/{id}', [ProposalController::class, 'destroy'])->whereNumber('id')->name('proposals.destroy');
 

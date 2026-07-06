@@ -841,6 +841,142 @@
                 }
             }
         },
+        "/api/v1/proposals/{id}/audit": {
+            "get": {
+                "tags": [
+                    "Proposals"
+                ],
+                "description": "List audit trail entries for a proposal (RF-10).",
+                "operationId": "listProposalAudits",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated audit trail",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ProposalAuditResource"
+                                            }
+                                        },
+                                        "links": {
+                                            "properties": {
+                                                "first": {
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                },
+                                                "last": {
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                },
+                                                "prev": {
+                                                    "type": "string",
+                                                    "format": "uri",
+                                                    "nullable": true
+                                                },
+                                                "next": {
+                                                    "type": "string",
+                                                    "format": "uri",
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "from": {
+                                                    "type": "integer",
+                                                    "example": 1,
+                                                    "nullable": true
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 15
+                                                },
+                                                "to": {
+                                                    "type": "integer",
+                                                    "example": 15,
+                                                    "nullable": true
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Proposal not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NotFoundError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/proposals/{id}/reject": {
             "post": {
                 "tags": [
@@ -1068,6 +1204,52 @@
                     "message": {
                         "type": "string",
                         "example": "Client not found."
+                    }
+                },
+                "type": "object"
+            },
+            "ProposalAuditResource": {
+                "required": [
+                    "id",
+                    "proposal_id",
+                    "actor",
+                    "event",
+                    "payload",
+                    "created_at"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "proposal_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "actor": {
+                        "type": "string",
+                        "example": "system"
+                    },
+                    "event": {
+                        "type": "string",
+                        "example": "CREATED",
+                        "enum": [
+                            "CREATED",
+                            "UPDATED_FIELDS",
+                            "STATUS_CHANGED",
+                            "DELETED_LOGICAL"
+                        ]
+                    },
+                    "payload": {
+                        "type": "object",
+                        "example": {
+                            "client_id": 1,
+                            "product": "Cloud Hosting Plan"
+                        }
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
                     }
                 },
                 "type": "object"

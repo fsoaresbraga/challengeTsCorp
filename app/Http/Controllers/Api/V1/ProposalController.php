@@ -11,7 +11,9 @@ use App\Http\Requests\Proposal\ProposalStatusActionRequest;
 use App\Http\Requests\Proposal\ShowProposalRequest;
 use App\Http\Requests\Proposal\StoreProposalRequest;
 use App\Http\Requests\Proposal\UpdateProposalRequest;
+use App\Http\Resources\ProposalAuditResource;
 use App\Http\Resources\ProposalResource;
+use App\Services\ProposalAuditService;
 use App\Services\ProposalSearchService;
 use App\Services\ProposalService;
 use Illuminate\Http\JsonResponse;
@@ -21,6 +23,7 @@ final class ProposalController extends BaseController
     public function __construct(
         private readonly ProposalService $proposalService,
         private readonly ProposalSearchService $proposalSearchService,
+        private readonly ProposalAuditService $proposalAuditService,
     ) {}
 
     public function index(ListProposalsRequest $request): JsonResponse
@@ -117,6 +120,8 @@ final class ProposalController extends BaseController
 
     public function audit(ListProposalAuditsRequest $request, int $id): JsonResponse
     {
-        abort(501, 'Not implemented');
+        $audits = $this->proposalAuditService->listForProposal($id, $request->validated());
+
+        return ProposalAuditResource::collection($audits)->response();
     }
 }
