@@ -12,6 +12,7 @@ use App\Http\Requests\Proposal\ShowProposalRequest;
 use App\Http\Requests\Proposal\StoreProposalRequest;
 use App\Http\Requests\Proposal\UpdateProposalRequest;
 use App\Http\Resources\ProposalResource;
+use App\Services\ProposalSearchService;
 use App\Services\ProposalService;
 use Illuminate\Http\JsonResponse;
 
@@ -19,11 +20,14 @@ final class ProposalController extends BaseController
 {
     public function __construct(
         private readonly ProposalService $proposalService,
+        private readonly ProposalSearchService $proposalSearchService,
     ) {}
 
     public function index(ListProposalsRequest $request): JsonResponse
     {
-        abort(501, 'Not implemented');
+        $proposals = $this->proposalSearchService->search($request->validated());
+
+        return ProposalResource::collection($proposals)->response();
     }
 
     public function store(StoreProposalRequest $request): JsonResponse

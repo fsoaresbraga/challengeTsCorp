@@ -280,6 +280,183 @@
             }
         },
         "/api/v1/proposals": {
+            "get": {
+                "tags": [
+                    "Proposals"
+                ],
+                "description": "Search proposals with filters, sorting, and pagination (RF-11, RF-12).",
+                "operationId": "listProposals",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "DRAFT",
+                                "SUBMITTED",
+                                "APPROVED",
+                                "REJECTED",
+                                "CANCELED"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "client_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "product",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Cloud",
+                            "maxLength": 255
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "sort_by",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "created_at",
+                            "enum": [
+                                "created_at",
+                                "monthly_value",
+                                "product",
+                                "status"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "sort_direction",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "desc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated proposal list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ProposalResource"
+                                            }
+                                        },
+                                        "links": {
+                                            "properties": {
+                                                "first": {
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                },
+                                                "last": {
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                },
+                                                "prev": {
+                                                    "type": "string",
+                                                    "format": "uri",
+                                                    "nullable": true
+                                                },
+                                                "next": {
+                                                    "type": "string",
+                                                    "format": "uri",
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "from": {
+                                                    "type": "integer",
+                                                    "example": 1,
+                                                    "nullable": true
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 15
+                                                },
+                                                "to": {
+                                                    "type": "integer",
+                                                    "example": 15,
+                                                    "nullable": true
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             "post": {
                 "tags": [
                     "Proposals"
