@@ -9,11 +9,17 @@ use OpenApi\Attributes as OA;
 #[OA\Post(
     path: '/api/v1/proposals/{id}/cancel',
     operationId: 'cancelProposal',
-    description: 'Cancel a DRAFT or SUBMITTED proposal with optimistic lock.',
+    description: 'Cancel a DRAFT or SUBMITTED proposal with optimistic lock (RF-08).',
     tags: ['Proposals'],
     parameters: [
         new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer', minimum: 1, example: 1)),
-        new OA\Parameter(name: 'X-Actor', in: 'header', required: false, schema: new OA\Schema(type: 'string', example: 'user:42')),
+        new OA\Parameter(
+            name: 'X-Actor',
+            in: 'header',
+            required: false,
+            description: 'Actor identifier: `system` or `user:{id}` (defaults to system)',
+            schema: new OA\Schema(type: 'string', example: 'user:42'),
+        ),
     ],
     requestBody: new OA\RequestBody(
         required: true,
@@ -23,10 +29,35 @@ use OpenApi\Attributes as OA;
         ),
     ),
     responses: [
-        new OA\Response(response: 200, description: 'Proposal canceled'),
-        new OA\Response(response: 404, description: 'Proposal not found'),
-        new OA\Response(response: 409, description: 'Optimistic lock conflict', content: new OA\JsonContent(ref: '#/components/schemas/ConflictError')),
-        new OA\Response(response: 422, description: 'Validation or transition error'),
+        new OA\Response(
+            response: 200,
+            description: 'Proposal canceled',
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'data', ref: '#/components/schemas/ProposalResource'),
+                ],
+            ),
+        ),
+        new OA\Response(
+            response: 404,
+            description: 'Proposal not found',
+            content: new OA\JsonContent(ref: '#/components/schemas/NotFoundError'),
+        ),
+        new OA\Response(
+            response: 409,
+            description: 'Optimistic lock conflict',
+            content: new OA\JsonContent(ref: '#/components/schemas/ConflictError'),
+        ),
+        new OA\Response(
+            response: 422,
+            description: 'Validation, business rule, or transition error',
+            content: new OA\JsonContent(
+                oneOf: [
+                    new OA\Schema(ref: '#/components/schemas/ValidationError'),
+                    new OA\Schema(ref: '#/components/schemas/BusinessError'),
+                ],
+            ),
+        ),
     ],
 )]
 final class CancelProposal

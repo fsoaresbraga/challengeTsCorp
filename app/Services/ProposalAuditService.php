@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\ProposalAuditEvent;
+use App\Exceptions\BusinessException;
 use App\Exceptions\EntityNotFoundException;
 use App\Models\Proposal;
 use App\Models\ProposalAudit;
@@ -18,6 +19,10 @@ final class ProposalAuditService
     {
         if ($actorHeader === null || $actorHeader === '') {
             return 'system';
+        }
+
+        if (! preg_match('/^(system|user:\d+)$/', $actorHeader)) {
+            throw new BusinessException('The actor must be "system" or "user:{id}".');
         }
 
         return $actorHeader;

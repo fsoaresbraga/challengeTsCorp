@@ -105,4 +105,41 @@ final class DestroyProposalTest extends TestCase
             ->assertJsonPath('message', 'Validation failed')
             ->assertJsonStructure(['errors' => ['version']]);
     }
+
+    public function test_returns_404_when_proposal_is_soft_deleted(): void
+    {
+        $proposal = Proposal::factory()->create(['status' => ProposalStatus::Draft, 'version' => 1]);
+        $proposal->delete();
+
+        $response = $this->deleteJson("/api/v1/proposals/{$proposal->id}", [
+            'version' => 1,
+        ]);
+
+        $response->assertNotFound()
+            ->assertJsonPath('message', 'Proposal not found.');
+    }
+
+    public function test_returns_422_when_proposal_is_rejected(): void
+    {
+        $proposal = Proposal::factory()->rejected()->create(['version' => 1]);
+
+        $response = $this->deleteJson("/api/v1/proposals/{$proposal->id}", [
+            'version' => 1,
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonPath('message', 'Proposal cannot be deleted in current status.');
+    }
+
+    public function test_returns_422_when_proposal_is_canceled(): void
+    {
+        $proposal = Proposal::factory()->canceled()->create(['version' => 1]);
+
+        $response = $this->deleteJson("/api/v1/proposals/{$proposal->id}", [
+            'version' => 1,
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonPath('message', 'Proposal cannot be deleted in current status.');
+    }
 }

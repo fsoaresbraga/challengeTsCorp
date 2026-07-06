@@ -97,4 +97,45 @@ final class ProposalStatusActionsTest extends TestCase
             ->assertUnprocessable()
             ->assertJsonPath('errors.idempotency_key.0', 'The Idempotency-Key header is required.');
     }
+
+    public function test_returns_422_when_approving_draft_proposal(): void
+    {
+        $proposal = Proposal::factory()->create(['status' => ProposalStatus::Draft, 'version' => 1]);
+
+        $this->postJson("/api/v1/proposals/{$proposal->id}/approve", ['version' => 1])
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'Invalid transition from DRAFT to APPROVED.');
+    }
+
+    public function test_cancels_submitted_proposal(): void
+    {
+        $proposal = Proposal::factory()->submitted()->create(['version' => 2]);
+
+        $this->postJson("/api/v1/proposals/{$proposal->id}/cancel", ['version' => 2])
+            ->assertOk()
+            ->assertJsonPath('data.status', ProposalStatus::Canceled->value)
+            ->assertJsonPath('data.version', 3);
+    }
+
+    public function test_returns_404_when_proposal_does_not_exist_on_submit(): void
+    {
+        $this->postJson('/api/v1/proposals/999/submit', ['version' => 1], [
+            'Idempotency-Key' => 'submit-key-404',
+        ])
+            ->assertNotFound()
+            ->assertJsonPath('message', 'Proposal not found.');
+    }
+
+    public function test_returns_422_when_submit_idempotency_key_is_reused_with_different_payload(): void
+    {
+        $proposal = Proposal::factory()->create(['status' => ProposalStatus::Draft, 'version' => 1]);
+        $headers = ['Idempotency-Key' => 'submit-key-conflict'];
+
+        $this->postJson("/api/v1/proposals/{$proposal->id}/submit", ['version' => 1], $headers)
+            ->assertOk();
+
+        $this->postJson("/api/v1/proposals/{$proposal->id}/submit", ['version' => 2], $headers)
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'Idempotency key reused with a different request payload.');
+    }
 }

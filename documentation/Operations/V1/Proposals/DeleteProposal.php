@@ -40,11 +40,7 @@ use OpenApi\Attributes as OA;
         new OA\Response(
             response: 404,
             description: 'Proposal not found',
-            content: new OA\JsonContent(
-                properties: [
-                    new OA\Property(property: 'message', type: 'string', example: 'Proposal not found.'),
-                ],
-            ),
+            content: new OA\JsonContent(ref: '#/components/schemas/NotFoundError'),
         ),
         new OA\Response(
             response: 409,

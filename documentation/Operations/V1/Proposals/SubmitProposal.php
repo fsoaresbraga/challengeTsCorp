@@ -9,7 +9,7 @@ use OpenApi\Attributes as OA;
 #[OA\Post(
     path: '/api/v1/proposals/{id}/submit',
     operationId: 'submitProposal',
-    description: 'Submit a proposal from DRAFT to SUBMITTED with optimistic lock and idempotency.',
+    description: 'Submit a proposal from DRAFT to SUBMITTED with optimistic lock and idempotency (RF-05).',
     tags: ['Proposals'],
     parameters: [
         new OA\Parameter(
@@ -28,6 +28,7 @@ use OpenApi\Attributes as OA;
             name: 'X-Actor',
             in: 'header',
             required: false,
+            description: 'Actor identifier: `system` or `user:{id}` (defaults to system)',
             schema: new OA\Schema(type: 'string', example: 'user:42'),
         ),
     ],
@@ -50,9 +51,26 @@ use OpenApi\Attributes as OA;
                 ],
             ),
         ),
-        new OA\Response(response: 404, description: 'Proposal not found'),
-        new OA\Response(response: 409, description: 'Optimistic lock conflict', content: new OA\JsonContent(ref: '#/components/schemas/ConflictError')),
-        new OA\Response(response: 422, description: 'Validation or business rule error'),
+        new OA\Response(
+            response: 404,
+            description: 'Proposal not found',
+            content: new OA\JsonContent(ref: '#/components/schemas/NotFoundError'),
+        ),
+        new OA\Response(
+            response: 409,
+            description: 'Optimistic lock conflict',
+            content: new OA\JsonContent(ref: '#/components/schemas/ConflictError'),
+        ),
+        new OA\Response(
+            response: 422,
+            description: 'Validation, business rule, or transition error',
+            content: new OA\JsonContent(
+                oneOf: [
+                    new OA\Schema(ref: '#/components/schemas/ValidationError'),
+                    new OA\Schema(ref: '#/components/schemas/BusinessError'),
+                ],
+            ),
+        ),
     ],
 )]
 final class SubmitProposal

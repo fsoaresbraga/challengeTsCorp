@@ -120,4 +120,33 @@ final class UpdateProposalTest extends TestCase
             ->assertJsonPath('message', 'Validation failed')
             ->assertJsonPath('errors.product.0', 'At least one of product or monthly_value must be provided.');
     }
+
+    public function test_returns_404_when_proposal_is_soft_deleted(): void
+    {
+        $proposal = Proposal::factory()->create(['status' => ProposalStatus::Draft, 'version' => 1]);
+        $proposal->delete();
+
+        $response = $this->patchJson("/api/v1/proposals/{$proposal->id}", [
+            'version' => 1,
+            'product' => 'Updated Plan',
+        ]);
+
+        $response->assertNotFound()
+            ->assertJsonPath('message', 'Proposal not found.');
+    }
+
+    public function test_returns_422_when_actor_header_is_invalid(): void
+    {
+        $proposal = Proposal::factory()->create(['status' => ProposalStatus::Draft, 'version' => 1]);
+
+        $response = $this->patchJson("/api/v1/proposals/{$proposal->id}", [
+            'version' => 1,
+            'product' => 'Updated Plan',
+        ], [
+            'X-Actor' => 'bad-actor',
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonPath('message', 'The actor must be "system" or "user:{id}".');
+    }
 }

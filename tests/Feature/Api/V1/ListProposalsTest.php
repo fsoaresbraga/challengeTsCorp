@@ -147,4 +147,22 @@ final class ListProposalsTest extends TestCase
             ->assertJsonPath('message', 'Validation failed')
             ->assertJsonStructure(['errors' => ['sort_by']]);
     }
+
+    public function test_returns_422_for_invalid_sort_direction(): void
+    {
+        $response = $this->getJson('/api/v1/proposals?sort_direction=invalid');
+
+        $response->assertUnprocessable()
+            ->assertJsonPath('message', 'Validation failed')
+            ->assertJsonStructure(['errors' => ['sort_direction']]);
+    }
+
+    public function test_returns_422_when_per_page_exceeds_maximum(): void
+    {
+        $response = $this->getJson('/api/v1/proposals?per_page=101');
+
+        $response->assertUnprocessable()
+            ->assertJsonPath('message', 'Validation failed')
+            ->assertJsonStructure(['errors' => ['per_page']]);
+    }
 }

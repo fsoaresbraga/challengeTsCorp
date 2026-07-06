@@ -143,4 +143,22 @@ final class StoreProposalTest extends TestCase
 
         $this->assertSame(1, Proposal::query()->count());
     }
+
+    public function test_returns_422_when_actor_header_is_invalid(): void
+    {
+        $client = Client::factory()->create();
+
+        $response = $this->postJson('/api/v1/proposals', [
+            'client_id' => $client->id,
+            'product' => 'Cloud Hosting Plan',
+            'monthly_value' => 299.90,
+            'origin' => ProposalOrigin::Api->value,
+        ], [
+            self::IDEMPOTENCY_HEADER => 'create-proposal-006',
+            'X-Actor' => 'invalid-actor',
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonPath('message', 'The actor must be "system" or "user:{id}".');
+    }
 }
